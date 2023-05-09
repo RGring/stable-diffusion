@@ -23,22 +23,19 @@ model:
       attn_resolutions: [ ]
       dropout: 0.0
 
-
 data:
   target: main.DataModuleFromConfig
   params:
     batch_size: 6
     wrap: True
     train:
-      target: ldm.data.imagenet.ImageNetSRTrain
+      target: ldm.data.rumexleaves.RumexLeavesSegTrain
       params:
         size: 256
-        degradation: pil_nearest
     validation:
-      target: ldm.data.imagenet.ImageNetSRValidation
+      target: ldm.data.rumexleaves.RumexLeavesSegEval
       params:
         size: 256
-        degradation: pil_nearest
 
 lightning:
   callbacks:

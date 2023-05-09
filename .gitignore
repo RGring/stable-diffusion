@@ -1,0 +1,6 @@
+models/*/*/*.zip*
+models/*/*/*.ckpt
+**__pycache__/
+.vscode
+logs/
+**egg-info/
