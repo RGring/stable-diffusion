@@ -4,3 +4,4 @@ models/*/*/*.ckpt
 .vscode
 logs/
 **egg-info/
+configs/*/*.yaml
