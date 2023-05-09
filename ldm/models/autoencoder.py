@@ -2,6 +2,12 @@ import torch
 import pytorch_lightning as pl
 import torch.nn.functional as F
 from contextlib import contextmanager
+from packaging import version
+from torch.optim.lr_scheduler import LambdaLR
+from ldm.modules.ema import LitEma
+import numpy as np
+
+
 
 from taming.modules.vqvae.quantize import VectorQuantizer2 as VectorQuantizer
 
@@ -143,8 +149,8 @@ class VQModel(pl.LightningModule):
         # https://github.com/pytorch/pytorch/issues/37142
         # try not to fool the heuristics
         x = self.get_input(batch, self.image_key)
-        xrec, qloss, ind = self(x, return_pred_indices=True)
-
+        xrec, qloss = self(x, return_pred_indices=False)
+        ind=None
         if optimizer_idx == 0:
             # autoencode
             aeloss, log_dict_ae = self.loss(qloss, x, xrec, optimizer_idx, self.global_step,
@@ -169,7 +175,8 @@ class VQModel(pl.LightningModule):
 
     def _validation_step(self, batch, batch_idx, suffix=""):
         x = self.get_input(batch, self.image_key)
-        xrec, qloss, ind = self(x, return_pred_indices=True)
+        xrec, qloss = self(x, return_pred_indices=False)
+        ind=None
         aeloss, log_dict_ae = self.loss(qloss, x, xrec, 0,
                                         self.global_step,
                                         last_layer=self.get_last_layer(),
