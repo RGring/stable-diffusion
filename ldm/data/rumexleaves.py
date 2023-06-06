@@ -38,10 +38,14 @@ class SegmentationBase(Dataset):
                 "bicubic": cv2.INTER_CUBIC,
                 "area": cv2.INTER_AREA,
                 "lanczos": cv2.INTER_LANCZOS4}[self.interpolation]
-            self.image_rescaler = albumentations.SmallestMaxSize(max_size=self.size,
-                                                                 interpolation=self.interpolation)
-            self.segmentation_rescaler = albumentations.SmallestMaxSize(max_size=self.size,
-                                                                        interpolation=cv2.INTER_NEAREST)
+            
+            self.image_rescaler = albumentations.Compose([albumentations.LongestMaxSize(max_size=self.size, interpolation=self.interpolation, p=1.0),
+                                                          albumentations.PadIfNeeded(min_height=self.size, min_width=self.size, border_mode=cv2.BORDER_CONSTANT, position="center", value=(100, 100, 100), mask_value=None, p=1.0)])
+
+            self.segmentation_rescaler = albumentations.Compose([albumentations.LongestMaxSize(max_size=self.size, interpolation=cv2.INTER_NEAREST, p=1.0),
+                                                                 albumentations.PadIfNeeded(min_height=self.size, min_width=self.size, border_mode=cv2.BORDER_CONSTANT, position="center", mask_value=3, p=1.0)
+                                                                 ])
+
             self.center_crop = not random_crop
             if self.center_crop:
                 self.cropper = albumentations.CenterCrop(height=self.size, width=self.size)
@@ -68,6 +72,9 @@ class SegmentationBase(Dataset):
             segmentation = segmentation+1
         if self.size is not None:
             segmentation = self.segmentation_rescaler(image=segmentation)["image"]
+            # Quick fix for albumentations bug
+            grey = np.where(np.all(image == (100, 100, 100), axis=-1))
+            segmentation[grey[0], grey[1]] = 3
         if self.size is not None:
             processed = self.preprocessor(image=image,
                                           mask=segmentation
@@ -88,25 +95,25 @@ class RumexLeavesSegEval(SegmentationBase):
         super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_val.txt",
                          data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
                          segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
-                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=3)
+                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)
 
 class RumexLeavesSegTest(SegmentationBase):
     def __init__(self, size=None, random_crop=False, interpolation="bicubic"):
         super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_test.txt",
                          data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
                          segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
-                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=3)
+                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)
         
 class RumexLeavesSeg1Batch(SegmentationBase):
     def __init__(self, size=None, random_crop=False, interpolation="bicubic"):
         super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_1_batch.txt",
                          data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
                          segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
-                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=3)
+                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)
 
 class RumexLeavesSegTrain(SegmentationBase):
     def __init__(self, size=None, random_crop=True, interpolation="bicubic"):
         super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_train.txt",
                          data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
                          segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
-                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=3)
+                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)
