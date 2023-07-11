@@ -10,7 +10,7 @@ class SegmentationBase(Dataset):
     def __init__(self,
                  data_csv, data_root, segmentation_root,
                  size=None, random_crop=False, interpolation="bicubic",
-                 n_labels=182, shift_segmentation=False,
+                 n_labels=182, shift_segmentation=True,
                  ):
         self.n_labels = n_labels
         self.shift_segmentation = shift_segmentation
@@ -30,6 +30,8 @@ class SegmentationBase(Dataset):
 
         size = None if size is not None and size<=0 else size
         self.size = size
+
+        transformations = []
         if self.size is not None:
             self.interpolation = interpolation
             self.interpolation = {
@@ -39,19 +41,17 @@ class SegmentationBase(Dataset):
                 "area": cv2.INTER_AREA,
                 "lanczos": cv2.INTER_LANCZOS4}[self.interpolation]
             
-            self.image_rescaler = albumentations.Compose([albumentations.LongestMaxSize(max_size=self.size, interpolation=self.interpolation, p=1.0),
-                                                          albumentations.PadIfNeeded(min_height=self.size, min_width=self.size, border_mode=cv2.BORDER_CONSTANT, position="center", value=(100, 100, 100), mask_value=None, p=1.0)])
 
-            self.segmentation_rescaler = albumentations.Compose([albumentations.LongestMaxSize(max_size=self.size, interpolation=cv2.INTER_NEAREST, p=1.0),
-                                                                 albumentations.PadIfNeeded(min_height=self.size, min_width=self.size, border_mode=cv2.BORDER_CONSTANT, position="center", mask_value=3, p=1.0)
-                                                                 ])
-
+            transformations.append(albumentations.LongestMaxSize(max_size=self.size, interpolation=self.interpolation, p=1.0))
+            transformations.append(albumentations.PadIfNeeded(min_height=self.size, min_width=self.size, border_mode=cv2.BORDER_CONSTANT, position="center", value=(0, 0, 0), mask_value=0, p=1.0))
+            
             self.center_crop = not random_crop
             if self.center_crop:
-                self.cropper = albumentations.CenterCrop(height=self.size, width=self.size)
+                transformations.append(albumentations.CenterCrop(height=self.size, width=self.size))
             else:
-                self.cropper = albumentations.RandomCrop(height=self.size, width=self.size)
-            self.preprocessor = self.cropper
+                transformations.append(albumentations.RandomCrop(height=self.size, width=self.size))
+        self.preprocessor = albumentations.Compose(transformations)
+                                                   
 
     def __len__(self):
         return self._length
@@ -62,27 +62,17 @@ class SegmentationBase(Dataset):
         if not image.mode == "RGB":
             image = image.convert("RGB")
         image = np.array(image).astype(np.uint8)
-        if self.size is not None:
-            image = self.image_rescaler(image=image)["image"]
         segmentation = Image.open(example["segmentation_path_"])
         assert segmentation.mode == "L", segmentation.mode
         segmentation = np.array(segmentation).astype(np.uint8)
         if self.shift_segmentation:
             # used to support segmentations containing unlabeled==255 label
             segmentation = segmentation+1
+
+
         if self.size is not None:
-            segmentation = self.segmentation_rescaler(image=segmentation)["image"]
-            # Quick fix for albumentations bug
-            grey = np.where(np.all(image == (100, 100, 100), axis=-1))
-            segmentation[grey[0], grey[1]] = 3
-        if self.size is not None:
-            processed = self.preprocessor(image=image,
-                                          mask=segmentation
-                                          )
-        else:
-            processed = {"image": image,
-                         "mask": segmentation
-                         }
+            processed = self.preprocessor(image=image, mask=segmentation)
+
         example["image"] = (processed["image"]/127.5 - 1.0).astype(np.float32)
         segmentation = processed["mask"]
         onehot = np.eye(self.n_labels)[segmentation]
