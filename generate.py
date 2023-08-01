@@ -46,6 +46,7 @@ class RumexLeavesGenerator:
                 condition = model.to_rgb(seg)
                 seg = seg.to('cuda').float()
                 seg = model.get_learned_conditioning(seg)
+                self.save_annotation(condition, x['polygons'], x['polylines'], f"{output_path}/images/annotations.xml")
                 with model.ema_scope("Plotting"):
                     sample, _ = model.sample_log(cond=seg, batch_size=self.batch_size, ddim=True,
                                                     ddim_steps=200, eta=1.0, quantize_denoised=False)
@@ -54,7 +55,6 @@ class RumexLeavesGenerator:
                     sample = sample.detach().cpu()
                 self.save_image(sample, f"{output_path}/images")
                 self.save_image(condition, f"{output_path}/masks")
-                self.save_annotation(condition, x['polygons'], x['polylines'], f"{output_path}/annotations.xml")
 
                 self.i_global += self.batch_size
     
@@ -81,7 +81,7 @@ class RumexLeavesGenerator:
             if sum(sum(polygon_points)) == 0:
                 break
             pol = Polygon("leaf_blade")
-            pol.set_polygon_points_as_array(polygon_points[np.where(polygon_points!=(0, 0))[0]])
+            pol.set_polygon_points_as_array(polygon_points[np.where(np.sum(polygon_points, axis=1) != 0)])
             polygons.append(pol)
         
         polylines = []
@@ -90,15 +90,15 @@ class RumexLeavesGenerator:
             if sum(sum(polyline_points)) == 0:
                 break
             pol = Polyline("leaf_stem")
-            pol.set_polyline_points_as_array(polyline_points[np.where(polyline_points!=(0, 0))[0]])
+            pol.set_polyline_points_as_array(polyline_points[np.where(np.sum(polyline_points, axis=1) != 0)])
             polylines.append(pol)
         annotation = Annotation(f"{self.i_global + i_sample}.png", image.shape[1], image.shape[2], polygon_list=polygons, polyline_list=polylines)
         return annotation
 
 
 if __name__ == '__main__':
-    log_folder = 'logs/ldm/2023-06-09T15-38-49_rumexleaves-ldm-vq-4_pretr1_3'
-    log_folder = 'logs/ldm/2023-06-09T11-09-41_rumexleaves-ldm-vq-4_pretr1_2'
+    log_folder = 'logs/ldm/2023-05-10T14-48-31_rumexleaves-ldm-vq-4_pretr1'
+    # log_folder = '/home/ronja/log/ldm/2023-07-06T15-17-12_rumexleaves-ldm-vq-4_pretr1_3_frac01'
 
     out_path = "/home/ronja/data/generated/RumexLeaves"
     img_size = 256
@@ -108,9 +108,11 @@ if __name__ == '__main__':
 
     ckpt_paths = [
             #  f'{log_folder}/checkpoints/epoch=000049.ckpt',
-                f'{log_folder}/checkpoints/epoch=000099.ckpt',
-            #  f'{log_folder}/checkpoints/epoch=000149.ckpt',
+                # f'{log_folder}/checkpoints/epoch=000099.ckpt',
                 f'{log_folder}/checkpoints/epoch=000199.ckpt',
+                # f'{log_folder}/checkpoints/epoch=000299.ckpt',
+                # f'{log_folder}/checkpoints/epoch=000399.ckpt',
+                f'{log_folder}/checkpoints/epoch=000599.ckpt',
                 ]
     
     for ckpt_path in ckpt_paths:

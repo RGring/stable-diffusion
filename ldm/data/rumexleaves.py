@@ -85,25 +85,25 @@ class RumexLeavesSegEval(SegmentationBase):
         super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_val.txt",
                          data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
                          segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
-                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)
+                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=3, shift_segmentation=False)
 
-class RumexLeavesSegTest(SegmentationBase):
-    def __init__(self, size=None, random_crop=False, interpolation="bicubic"):
-        super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_test.txt",
-                         data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
-                         segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
-                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)
+# class RumexLeavesSegTest(SegmentationBase):
+#     def __init__(self, size=None, random_crop=False, interpolation="bicubic"):
+#         super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_test.txt",
+#                          data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
+#                          segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
+#                          size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)
         
-class RumexLeavesSeg1Batch(SegmentationBase):
-    def __init__(self, size=None, random_crop=False, interpolation="bicubic"):
-        super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_1_batch.txt",
-                         data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
-                         segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
-                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)
+# class RumexLeavesSeg1Batch(SegmentationBase):
+#     def __init__(self, size=None, random_crop=False, interpolation="bicubic"):
+#         super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_1_batch.txt",
+#                          data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
+#                          segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
+#                          size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)
 
-class RumexLeavesSegTrain(SegmentationBase):
-    def __init__(self, size=None, random_crop=True, interpolation="bicubic"):
-        super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_train.txt",
-                         data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
-                         segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
-                         size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)
+# class RumexLeavesSegTrain(SegmentationBase):
+#     def __init__(self, size=None, random_crop=True, interpolation="bicubic"):
+#         super().__init__(data_csv="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/dataset_splits/random_train.txt",
+#                          data_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist",
+#                          segmentation_root="/home/ronja/data/l515_imgs/RumexLeaves/iNaturalist/segmentations",
+#                          size=size, random_crop=random_crop, interpolation=interpolation, n_labels=4)

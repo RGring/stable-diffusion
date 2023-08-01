@@ -33,7 +33,7 @@ def ldm_cond_sample(config_path, ckpt_path, dataset, batch_size):
 
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
-    image_path = f"{os.path.dirname(ckpt_path)}/../images/{os.path.basename(ckpt_path).replace('.ckpt', '')}"
+    image_path = f"{os.path.dirname(ckpt_path)}/../images/{os.path.basename(ckpt_path).replace('.ckpt', '')}/val"
     os.makedirs(image_path, exist_ok=True)
 
     x = next(iter(dataloader))
@@ -65,29 +65,18 @@ def ldm_cond_sample(config_path, ckpt_path, dataset, batch_size):
 
 if __name__ == '__main__':
 
-    log_folder = 'logs/ldm/2023-05-09T09-25-17_rumexleaves-ldm-vq-4'
+    log_folder = '/home/ronja/log/ldm/2023-05-10T14-48-31_rumexleaves-ldm-vq-4_pretr1'
     config_path = glob.glob(f'{log_folder}/configs/*-project.yaml')[0]
     ckpts = glob.glob(f'{log_folder}/checkpoints/*.ckpt')
+    ckpts = [
+        # f'{log_folder}/checkpoints/epoch=000099.ckpt',
+        f'{log_folder}/checkpoints/epoch=000199.ckpt',
+        ]
 
     # dataset = LandscapesSegEval(size=256)
     # dataset = RumexLeavesSegTrain(size=256)
-    dataset = RumexLeavesSegTest(size=256)
+    dataset = RumexLeavesSegEval(size=256)
 
     for ckpt in ckpts:
         ckpt_path = ckpt
-        ldm_cond_sample(config_path, ckpt_path, dataset, 8)
-
-
-
-    # # config_path = 'models/ldm/semantic_synthesis256/config.yaml'
-    # # config_path = 'configs/latent-diffusion/landscapes-ldm-vq-4.yaml'
-    # config_path = 'configs/latent-diffusion/rumexleaves-ldm-vq-4_pretr1.yaml'
-    # #config_path = 'configs/latent-diffusion/rumexleaves-ldm-kl-8_pretr.yaml'
-    # # ckpt_path = 'logs/2023-05-01T14-48-02_landscapes-ldm-vq-4/checkpoints/epoch=000085.ckpt'
-    # ckpt_path = 'logs/ldm/2023-05-08T11-09-07_rumexleaves-ldm-vq-4_pretr1/checkpoints/epoch=000343.ckpt'
-
-    # # dataset = LandscapesSegEval(size=256)
-    # # dataset = RumexLeavesSegEva-l(size=256)
-    # dataset = RumexLeavesSegTest(size=256)
-
-    # ldm_cond_sample(config_path, ckpt_path, dataset, 8)
+        ldm_cond_sample(config_path, ckpt_path, dataset, 4)
